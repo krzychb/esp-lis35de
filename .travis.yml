@@ -23,7 +23,7 @@ install:
   # Prepare directory for the toolchain
   - mkdir -p ~/esp
   - cd ~/esp
-  - XTENSA_DIST=xtensa-esp32-elf-linux64-1.22.0-73-ge28a011-5.2.0.tar.gz
+  - XTENSA_DIST=xtensa-esp32-elf-linux64-1.22.0-75-gbaf03c2-5.2.0.tar.gz
   # Download binary toolchain for the ESP32
   - wget https://dl.espressif.com/dl/$XTENSA_DIST
   - tar -xzf $XTENSA_DIST

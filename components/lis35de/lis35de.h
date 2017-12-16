@@ -19,7 +19,16 @@ extern "C" {
 #define ESP_ERR_LIS35_BASE                  0x40000
 #define ESP_ERR_LIS35_NOT_DETECTED          (ESP_ERR_LIS35_BASE + 1)
 
-esp_err_t lis35de_init();
+typedef struct {
+    int cs_pin;
+    int sck_pin;
+    int mosi_pin;
+    int miso_pin;
+    int clk_freq_hz;
+} lis35de_spi_conf_t;
+
+
+esp_err_t lis35de_init(lis35de_spi_conf_t *config);
 esp_err_t lis35de_read_position_x(int8_t* x);
 esp_err_t lis35de_read_position_y(int8_t* y);
 esp_err_t lis35de_read_position_z(int8_t* z);

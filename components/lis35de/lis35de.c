@@ -16,15 +16,8 @@
 
 static const char *TAG = "LIS35DE Driver";
 
-// SPI Pin definition
-#define CS_PIN      (GPIO_NUM_22)
-#define SCK_PIN     (GPIO_NUM_18)
-#define MOSI_PIN    (GPIO_NUM_23)
-#define MISO_PIN    (GPIO_NUM_19)
-
 // SPI Parameters
 #define LIS35_QUE_SIZE          10
-#define LIS35_SPI_FREQ_HZ       8*1000*1000 // Max 10 MHz
 
 // LIS35DE Registers
 #define LIS35_WRITE             0       // Logical | with register address to write data
@@ -67,37 +60,6 @@ static const char *TAG = "LIS35DE Driver";
 spi_device_handle_t lis35de_bus;
 
 
-static esp_err_t lis35de_spi_init()
-{
-    esp_err_t err;
-    spi_bus_config_t buscfg = {
-        .miso_io_num = MISO_PIN,
-        .mosi_io_num = MOSI_PIN,
-        .sclk_io_num = SCK_PIN,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = 0,   // 0 means that max transfer size is 4k bytes
-    };
-
-    spi_device_interface_config_t devcfg = {
-        .clock_speed_hz = LIS35_SPI_FREQ_HZ,
-        .mode = 0,
-        .spics_io_num = CS_PIN,
-        .queue_size = LIS35_QUE_SIZE,
-        .address_bits = 8,  // Address size is the same for all transactions
-    };
-    err = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "SPI bus initialization failed, err = %d", err);
-    }
-    err = spi_bus_add_device(HSPI_HOST, &devcfg, &lis35de_bus);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "SPI bus device add failed, err = %d", err);
-    }
-    return err;
-}
-
-
 static esp_err_t lis35de_write(const uint8_t addr, const uint8_t data)
 {
     spi_transaction_t t = {
@@ -138,12 +100,43 @@ static esp_err_t lis35de_read(const uint8_t addr, uint8_t *data)
 }
 
 
-esp_err_t lis35de_init()
+static esp_err_t lis35de_spi_init(lis35de_spi_conf_t *config)
+{
+    esp_err_t err;
+    spi_bus_config_t buscfg = {
+        .miso_io_num = config->miso_pin,
+        .mosi_io_num = config->mosi_pin,
+        .sclk_io_num = config->sck_pin,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = 0,   // 0 means that max transfer size is 4k bytes
+    };
+
+    spi_device_interface_config_t devcfg = {
+        .clock_speed_hz = config->clk_freq_hz,
+        .mode = 0,
+        .spics_io_num = config->cs_pin,
+        .queue_size = LIS35_QUE_SIZE,
+        .address_bits = 8,  // Address size is the same for all transactions
+    };
+    err = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "SPI bus initialization failed, err = %d", err);
+    }
+    err = spi_bus_add_device(HSPI_HOST, &devcfg, &lis35de_bus);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "SPI bus device add failed, err = %d", err);
+    }
+    return err;
+}
+
+
+esp_err_t lis35de_init(lis35de_spi_conf_t *config)
 {
     esp_err_t err;
 
     ESP_LOGI(TAG, "Initialize SPI");
-    err  = lis35de_spi_init();
+    err  = lis35de_spi_init(config);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "SPI initialization failed, err = %d", err);
         return err;
@@ -170,7 +163,7 @@ esp_err_t lis35de_init()
         return err;
     }
 
-    ESP_LOGI(TAG, "Check if sensor responds");
+    ESP_LOGI(TAG, "Check if sensor responds...");
     uint8_t response_check = data;
     addr = LIS35_READ | LIS35_ADDR_NO_INC | LIS35_REG_CR1;
     err  = lis35de_read(addr, &data);

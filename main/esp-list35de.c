@@ -16,41 +16,33 @@
 
 static const char *TAG = "LIS35DE Example";
 
-#define BLINK_GPIO CONFIG_BLINK_GPIO
-#define TRIGGER_PIN (GPIO_NUM_4)
-
-
-void blink_task(void *pvParameter)
-{
-    gpio_pad_select_gpio(BLINK_GPIO);
-    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-    while(1) {
-        gpio_set_level(BLINK_GPIO, 0);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        gpio_set_level(BLINK_GPIO, 1);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-}
+// SPI Pin and parameters definition
+#define CS_PIN          (GPIO_NUM_22)
+#define SCK_PIN         (GPIO_NUM_18)
+#define MOSI_PIN        (GPIO_NUM_23)
+#define MISO_PIN        (GPIO_NUM_19)
+#define SPI_FREQ_HZ     8*1000*1000  // Max 10 MHz for LIS35DE
 
 
 void lis35de_task(void *pvParameter)
 {
     esp_err_t err;
 
-    gpio_pad_select_gpio(TRIGGER_PIN);
-    gpio_set_direction(TRIGGER_PIN, GPIO_MODE_OUTPUT);
+    lis35de_spi_conf_t spi_config = {
+            .cs_pin = CS_PIN,
+            .sck_pin = SCK_PIN,
+            .mosi_pin = MOSI_PIN,
+            .miso_pin = MISO_PIN,
+            .clk_freq_hz = SPI_FREQ_HZ
+    };
 
-    err = lis35de_init();
+    err = lis35de_init(&spi_config);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Sensor initialization failed, err = %d", err);
         while(1);
     }
 
     while(1) {
-        gpio_set_level(TRIGGER_PIN, 1);
-        vTaskDelay(1 / portTICK_PERIOD_MS);
-        gpio_set_level(TRIGGER_PIN, 0);
-
         int8_t x, y, z;
         err  = lis35de_read_position(&x, &y, &z);
         if (err != ESP_OK) {
@@ -65,8 +57,6 @@ void lis35de_task(void *pvParameter)
 
 void app_main()
 {
-    ESP_LOGI(TAG, "Starting tasks");
-
-    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-    xTaskCreate(&lis35de_task, "lis35de_task", 8 * 1024, NULL, 5, NULL);
+    ESP_LOGI(TAG, "Starting example");
+    xTaskCreate(&lis35de_task, "lis35de_task", 4 * 1024, NULL, 5, NULL);
 }

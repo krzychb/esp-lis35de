@@ -40,6 +40,13 @@ I (487) LIS35DE Example: x:   1, y:   3, z:  53
 I (687) LIS35DE Example: x:   0, y:   4, z:  52
 ```
 
+## Example SPI transaction
+
+![alt text](pictures/lis35de-sample-spi-transaction.png "Example SPI single transaction when reading X:Y:Z axis position")
+
+Picture above shows an example SPI transaction reading sensors X:Y:Z axis position. To do so, we are using an option `LIS35_ADDR_INC` to automatically increment register address and retrieving axis position in a single SPI transaction.
+
+
 ## Contribute
 
 Feel free to contribute to the project in any way you like!

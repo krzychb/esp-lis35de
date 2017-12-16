@@ -6,6 +6,11 @@ Communicate by [ESP32](http://espressif.com/en/products/hardware/esp32/overview)
 * [LIS35DE Breakboard](pictures/kamodmems2_en.pdf)
 
 
+## Build Status
+
+[![Build Status](https://travis-ci.org/krzychb/esp-lis35de.svg?branch=master)](https://travis-ci.org/krzychb/esp-lis35de)
+
+
 ## Wiring of sensor used in example code
 
 | Signal Name | Sensor | ESP32 |
@@ -13,7 +18,7 @@ Communicate by [ESP32](http://espressif.com/en/products/hardware/esp32/overview)
 | Slave Select | SS | GPIO22 |
 | Serial Clock | SCK | GPIO18 |
 | Master Out Slave In | MOSI | GPIO23 |
-| Master In Slave Out | MOSI | GPIO19 |
+| Master In Slave Out | MISO | GPIO19 |
 
 
 ## Contribute
